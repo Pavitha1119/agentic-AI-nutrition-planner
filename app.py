@@ -196,4 +196,47 @@ for col, (icon, title, desc) in zip(cols, features):
         """, unsafe_allow_html=True)
 
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.success("Project setup completed successfully.")
+
+# ---------------------------------------------------------
+# Nutrition Profile Form
+# ---------------------------------------------------------
+st.markdown('<div class="section-heading">📝 Tell Us About Yourself</div>', unsafe_allow_html=True)
+
+with st.form("nutrition_profile_form"):
+    col1, col2 = st.columns(2)
+
+    with col1:
+        age = st.number_input("Age", min_value=1, max_value=120, step=1)
+        gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+        height = st.number_input("Height (cm)", min_value=50.0, max_value=250.0, step=0.5)
+        weight = st.number_input("Weight (kg)", min_value=10.0, max_value=300.0, step=0.5)
+
+    with col2:
+        disease = st.multiselect(
+            "Medical Conditions (if any)",
+            ["None", "Diabetes", "Hypertension", "Cholesterol", "Thyroid", "PCOS", "Other"],
+            default=["None"]
+        )
+        goal = st.selectbox(
+            "Your Goal",
+            ["Weight Loss", "Weight Gain", "Maintain Weight", "Muscle Building", "General Health"]
+        )
+        food_preference = st.selectbox(
+            "Food Preference",
+            ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"]
+        )
+
+    submitted = st.form_submit_button("🚀 Generate My Nutrition Plan")
+
+    if submitted:
+        st.session_state["user_profile"] = {
+            "age": age,
+            "gender": gender,
+            "height_cm": height,
+            "weight_kg": weight,
+            "diseases": disease,
+            "goal": goal,
+            "food_preference": food_preference,
+        }
+        st.success(" Profile saved! Passing your details to the AI agents...")
+        st.json(st.session_state["user_profile"])
