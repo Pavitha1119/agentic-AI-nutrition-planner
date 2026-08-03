@@ -33,7 +33,7 @@ def format_chunks_for_context(chunks: list[Document]) -> str:
 if __name__ == "__main__":
     test_query = "What foods should a diabetic patient avoid?"
 
-    print(f"🔍 Query: {test_query}\n")
+    print(f" Query: {test_query}\n")
 
     results = retrieve_with_scores(test_query, k=3)
     for doc, score in results:

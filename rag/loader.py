@@ -15,7 +15,7 @@ def load_pdfs(folder_path: str = KNOWLEDGE_BASE_DIR) -> list[Document]:
     pdf_files = [f for f in os.listdir(folder_path) if f.lower().endswith(".pdf")]
 
     if not pdf_files:
-        print(f"⚠️ No PDF files found in '{folder_path}'.")
+        print(f" No PDF files found in '{folder_path}'.")
         return all_documents
 
     for filename in pdf_files:

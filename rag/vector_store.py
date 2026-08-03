@@ -27,7 +27,7 @@ def build_vector_store(chunks: list[Document]) -> Chroma:
         persist_directory=PERSIST_DIRECTORY,
     )
 
-    print(f"✅ Vector store built and saved to '{PERSIST_DIRECTORY}/'")
+    print(f" Vector store built and saved to '{PERSIST_DIRECTORY}/'")
     return vector_store
 
 
