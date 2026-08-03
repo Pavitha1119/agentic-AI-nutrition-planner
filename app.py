@@ -2,6 +2,9 @@ import streamlit as st
 from PIL import Image
 import base64
 import os
+import mimetypes
+from agents.disease_agent import get_disease_guidance
+from agents.meal_planner_agent import generate_meal_plan
 
 # ---------------------------------------------------------
 # Page Configuration
@@ -25,7 +28,8 @@ def get_base64(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
 
-hero_img_base64 = get_base64("assets/hero-illustration.png")  # or .webp
+hero_img_base64 = get_base64("assets/ai_nutrition_agent.jpg")
+st.write(os.path.exists("assets/ai_nutrition_agent.jpg"))  # or .webp
 
 # ---------------------------------------------------------
 # Custom CSS
@@ -145,33 +149,47 @@ with col1:
     if logo:
         st.image(logo, width=70)
 with col2:
-    st.markdown("### 🥗 NutriGenie AI")
+    st.markdown("### NutriGenie AI")
 
 # ---------------------------------------------------------
 # Hero Section
 # ---------------------------------------------------------
-img_tag = (
-    f'<img src="data:image/png;base64,{hero_img_base64}" />'
-    if hero_img_base64 else
-    '<div style="font-size:120px;">🥑</div>'  # fallback emoji if no image found
-)
+
+if hero_img_base64:
+    img_tag = f'<img src="data:image/jpg;base64,{hero_img_base64}" alt="AI Nutrition Agent">'
+else:
+    img_tag = """
+    <div style="
+        width:350px;
+        height:350px;
+        background:#ffffff;
+        border-radius:20px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        color:#1E90FF;
+        font-size:22px;
+        font-weight:bold;
+        box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    ">
+        Image Not Found
+    </div>
+    """
 
 st.markdown(f"""
 <div class="hero-container">
     <div class="hero-text">
         <h1>Personalized Nutrition,<br>Powered by <span>Agentic AI</span></h1>
         <p>
-            NutriGenie AI uses a team of intelligent agents — working together to understand
-            your health goals, dietary needs, and preferences — to build a nutrition plan made
-            entirely for you.
+            NutriGenie AI uses a team of intelligent agents working together to understand
+            your health goals, dietary needs, and food preferences, then generate a
+            personalized nutrition plan just for you.
         </p>
     </div>
-    <div class="hero-img">
-        {img_tag}
-    </div>
+
+
 </div>
 """, unsafe_allow_html=True)
-
 # ---------------------------------------------------------
 # Feature Cards
 # ---------------------------------------------------------
@@ -226,9 +244,9 @@ with st.form("nutrition_profile_form"):
             ["Vegetarian", "Non-Vegetarian", "Vegan", "Eggetarian"]
         )
 
-    submitted = st.form_submit_button("🚀 Generate My Nutrition Plan")
+    submitted = st.form_submit_button(" Generate My Nutrition Plan")
 
-    if submitted:
+if submitted:
         st.session_state["user_profile"] = {
             "age": age,
             "gender": gender,
@@ -240,3 +258,52 @@ with st.form("nutrition_profile_form"):
         }
         st.success(" Profile saved! Passing your details to the AI agents...")
         st.json(st.session_state["user_profile"])
+# ---------------------------------------------
+# Agent 1 - Disease Guideline Agent
+# ---------------------------------------------
+
+        with st.spinner("Disease Guideline Agent is analyzing your medical conditions..."):
+
+            disease_result = get_disease_guidance(
+                st.session_state["user_profile"]["diseases"]
+    )
+            st.divider()
+
+            st.subheader(" Disease Guideline Agent")
+
+            st.markdown(disease_result["guidance"])
+
+        with st.expander("View Sources"):
+
+            for src in disease_result["sources"]:
+                st.write(f"- {src}")
+
+# ---------------------------------------------
+# Agent 2 - Meal Planner Agent
+# ---------------------------------------------
+
+        with st.spinner("Meal Planner Agent is creating your personalized meal plan..."):
+
+            meal_result = generate_meal_plan(
+                st.session_state["user_profile"],
+                disease_result["guidance"]
+    )
+        st.divider()
+
+        st.subheader(" Personalized Meal Plan")
+
+        profile = meal_result["profile_summary"]
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.metric("BMI", profile["bmi"])
+
+        with col2:
+            st.metric("BMR", f'{profile["bmr"]} kcal')
+
+        with col3:
+            st.metric("Daily Calories", f'{profile["daily_calories"]} kcal')
+
+
+        st.markdown(meal_result["meal_plan"])
